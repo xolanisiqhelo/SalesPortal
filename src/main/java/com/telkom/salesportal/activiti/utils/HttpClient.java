@@ -32,7 +32,7 @@ public class HttpClient {
 	}
 	
 	
-	public String post(String url, String json) {
+	public Response post(String url, String json) {
 		LOGGER.info("Post \n " + json);
 		try {
 			RequestBody body = RequestBody.create(this.TYPE, json);
@@ -40,7 +40,7 @@ public class HttpClient {
 			Response response = client.newCall(request).execute();
 			String responseBody = response.body().string();
 			LOGGER.info("Response from " + responseBody);
-			return responseBody;
+			return response;
 		} catch (IOException e) {
 			e.printStackTrace();
 			return null;

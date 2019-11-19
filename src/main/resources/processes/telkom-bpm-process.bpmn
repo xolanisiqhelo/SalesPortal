@@ -2,7 +2,9 @@
 <definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
   <process id="telkom-process" name="Telkom Process" isExecutable="true">
     <startEvent id="startevent1" name="Start"></startEvent>
-    <serviceTask id="xds-verification" name="Xds Verification" activiti:class="com.telkom.salesportal.activiti.delegate.XdsVerification"></serviceTask>
+    <serviceTask id="xds-verification" name="Xds Verification" activiti:class="com.telkom.salesportal.activiti.delegate.XdsVerification">
+      <documentation>xds verification with IDNr</documentation>
+    </serviceTask>
     <sequenceFlow id="flow1" sourceRef="startevent1" targetRef="xds-verification"></sequenceFlow>
     <exclusiveGateway id="exclusivegateway1" name="Exclusive Gateway"></exclusiveGateway>
     <sequenceFlow id="flow2" sourceRef="xds-verification" targetRef="exclusivegateway1"></sequenceFlow>
@@ -18,70 +20,167 @@
     </sequenceFlow>
     <exclusiveGateway id="exclusivegateway2" name="Exclusive Gateway"></exclusiveGateway>
     <sequenceFlow id="flow6" sourceRef="checkCustomer" targetRef="exclusivegateway2"></sequenceFlow>
-    <serviceTask id="check_banking_details" name="check banking  details" activiti:class="com.telkom.salesportal.activiti.delegate.CheckBankDetails"></serviceTask>
+    <serviceTask id="check_banking_details" name="check banking  details" activiti:class="com.telkom.salesportal.activiti.delegate.CheckBankDetails">
+      <documentation>Check banking details for customer</documentation>
+    </serviceTask>
     <sequenceFlow id="flow8" sourceRef="exclusivegateway2" targetRef="check_banking_details">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${customerCheckStatus==200}]]></conditionExpression>
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${customerCheckStatus=="true"}]]></conditionExpression>
     </sequenceFlow>
-    <endEvent id="endevent3" name="End"></endEvent>
-    <sequenceFlow id="flow9" sourceRef="exclusivegateway2" targetRef="endevent3">
-      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${customerCheckStatus==500}]]></conditionExpression>
+    <exclusiveGateway id="exclusivegateway4" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow13" sourceRef="check_banking_details" targetRef="exclusivegateway4"></sequenceFlow>
+    <userTask id="SelectBillingAccount" name="Select Billing Account">
+      <documentation>Select account want to pay with</documentation>
+    </userTask>
+    <sequenceFlow id="flow14" sourceRef="exclusivegateway4" targetRef="SelectBillingAccount">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${customerBankDetails=="true"}]]></conditionExpression>
     </sequenceFlow>
+    <userTask id="CreateBankingDatils" name="Create Banking Datils">
+      <documentation>create nw banking details if new cutomer</documentation>
+    </userTask>
+    <sequenceFlow id="flow15" sourceRef="exclusivegateway4" targetRef="CreateBankingDatils">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${customerBankDetails=="false"}]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="endevent6" name="End"></endEvent>
+    <sequenceFlow id="flow16" sourceRef="CreateBankingDatils" targetRef="endevent6"></sequenceFlow>
+    <endEvent id="endevent7" name="End"></endEvent>
+    <sequenceFlow id="flow17" sourceRef="SelectBillingAccount" targetRef="endevent7"></sequenceFlow>
+    <userTask id="CapturePersonaldetails" name="Capture Personal details" activiti:assignee="${assignee}">
+      <documentation>capture persona details
+
+</documentation>
+    </userTask>
+    <sequenceFlow id="flow18" sourceRef="exclusivegateway2" targetRef="CapturePersonaldetails">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${customerCheckStatus=="false"}]]></conditionExpression>
+    </sequenceFlow>
+    <serviceTask id="savePersonalDeatils" name="Save Personal Deatils" activiti:class="com.telkom.salesportal.activiti.delegate.SavePersonalDeatils">
+      <documentation>save persona details</documentation>
+    </serviceTask>
+    <exclusiveGateway id="exclusivegateway5" name="Exclusive Gateway"></exclusiveGateway>
+    <sequenceFlow id="flow20" sourceRef="savePersonalDeatils" targetRef="exclusivegateway5"></sequenceFlow>
+    <sequenceFlow id="flow21" sourceRef="exclusivegateway5" targetRef="check_banking_details">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${savePersonalDeatils==true}]]></conditionExpression>
+    </sequenceFlow>
+    <endEvent id="endevent8" name="End"></endEvent>
+    <sequenceFlow id="flow22" sourceRef="exclusivegateway5" targetRef="endevent8">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${SavePersonalDeatils==false}]]></conditionExpression>
+    </sequenceFlow>
+    <sequenceFlow id="flow23" sourceRef="CapturePersonaldetails" targetRef="savePersonalDeatils"></sequenceFlow>
   </process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_telkom-process">
     <bpmndi:BPMNPlane bpmnElement="telkom-process" id="BPMNPlane_telkom-process">
       <bpmndi:BPMNShape bpmnElement="startevent1" id="BPMNShape_startevent1">
-        <omgdc:Bounds height="35.0" width="35.0" x="60.0" y="310.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="10.0" y="310.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="xds-verification" id="BPMNShape_xds-verification">
-        <omgdc:Bounds height="55.0" width="105.0" x="170.0" y="300.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="80.0" y="301.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway1" id="BPMNShape_exclusivegateway1">
-        <omgdc:Bounds height="40.0" width="40.0" x="320.0" y="308.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="230.0" y="308.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="endevent2" id="BPMNShape_endevent2">
-        <omgdc:Bounds height="35.0" width="35.0" x="344.0" y="460.0"></omgdc:Bounds>
+        <omgdc:Bounds height="35.0" width="35.0" x="233.0" y="470.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="checkCustomer" id="BPMNShape_checkCustomer">
-        <omgdc:Bounds height="55.0" width="105.0" x="400.0" y="150.0"></omgdc:Bounds>
+        <omgdc:Bounds height="55.0" width="105.0" x="300.0" y="192.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="exclusivegateway2" id="BPMNShape_exclusivegateway2">
-        <omgdc:Bounds height="40.0" width="40.0" x="550.0" y="158.0"></omgdc:Bounds>
+        <omgdc:Bounds height="40.0" width="40.0" x="440.0" y="199.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape bpmnElement="check_banking_details" id="BPMNShape_check_banking_details">
-        <omgdc:Bounds height="71.0" width="105.0" x="700.0" y="60.0"></omgdc:Bounds>
+        <omgdc:Bounds height="61.0" width="105.0" x="662.0" y="100.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape bpmnElement="endevent3" id="BPMNShape_endevent3">
-        <omgdc:Bounds height="35.0" width="35.0" x="635.0" y="161.0"></omgdc:Bounds>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway4" id="BPMNShape_exclusivegateway4">
+        <omgdc:Bounds height="40.0" width="40.0" x="842.0" y="110.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="SelectBillingAccount" id="BPMNShape_SelectBillingAccount">
+        <omgdc:Bounds height="61.0" width="105.0" x="810.0" y="10.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="CreateBankingDatils" id="BPMNShape_CreateBankingDatils">
+        <omgdc:Bounds height="69.0" width="105.0" x="810.0" y="192.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent6" id="BPMNShape_endevent6">
+        <omgdc:Bounds height="35.0" width="35.0" x="950.0" y="209.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent7" id="BPMNShape_endevent7">
+        <omgdc:Bounds height="35.0" width="35.0" x="960.0" y="23.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="CapturePersonaldetails" id="BPMNShape_CapturePersonaldetails">
+        <omgdc:Bounds height="64.0" width="105.0" x="408.0" y="303.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="savePersonalDeatils" id="BPMNShape_savePersonalDeatils">
+        <omgdc:Bounds height="66.0" width="105.0" x="558.0" y="301.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="exclusivegateway5" id="BPMNShape_exclusivegateway5">
+        <omgdc:Bounds height="40.0" width="40.0" x="694.0" y="314.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent8" id="BPMNShape_endevent8">
+        <omgdc:Bounds height="35.0" width="35.0" x="779.0" y="317.0"></omgdc:Bounds>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
-        <omgdi:waypoint x="95.0" y="327.0"></omgdi:waypoint>
-        <omgdi:waypoint x="170.0" y="327.0"></omgdi:waypoint>
+        <omgdi:waypoint x="45.0" y="327.0"></omgdi:waypoint>
+        <omgdi:waypoint x="80.0" y="328.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
-        <omgdi:waypoint x="275.0" y="327.0"></omgdi:waypoint>
-        <omgdi:waypoint x="320.0" y="328.0"></omgdi:waypoint>
+        <omgdi:waypoint x="185.0" y="328.0"></omgdi:waypoint>
+        <omgdi:waypoint x="230.0" y="328.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
-        <omgdi:waypoint x="340.0" y="348.0"></omgdi:waypoint>
-        <omgdi:waypoint x="361.0" y="460.0"></omgdi:waypoint>
+        <omgdi:waypoint x="250.0" y="348.0"></omgdi:waypoint>
+        <omgdi:waypoint x="250.0" y="470.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
-        <omgdi:waypoint x="340.0" y="308.0"></omgdi:waypoint>
-        <omgdi:waypoint x="339.0" y="177.0"></omgdi:waypoint>
-        <omgdi:waypoint x="400.0" y="177.0"></omgdi:waypoint>
+        <omgdi:waypoint x="250.0" y="308.0"></omgdi:waypoint>
+        <omgdi:waypoint x="250.0" y="219.0"></omgdi:waypoint>
+        <omgdi:waypoint x="300.0" y="219.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow6" id="BPMNEdge_flow6">
-        <omgdi:waypoint x="505.0" y="177.0"></omgdi:waypoint>
-        <omgdi:waypoint x="550.0" y="178.0"></omgdi:waypoint>
+        <omgdi:waypoint x="405.0" y="219.0"></omgdi:waypoint>
+        <omgdi:waypoint x="440.0" y="219.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge bpmnElement="flow8" id="BPMNEdge_flow8">
-        <omgdi:waypoint x="570.0" y="158.0"></omgdi:waypoint>
-        <omgdi:waypoint x="570.0" y="91.0"></omgdi:waypoint>
-        <omgdi:waypoint x="700.0" y="95.0"></omgdi:waypoint>
+        <omgdi:waypoint x="460.0" y="199.0"></omgdi:waypoint>
+        <omgdi:waypoint x="460.0" y="130.0"></omgdi:waypoint>
+        <omgdi:waypoint x="662.0" y="130.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNEdge bpmnElement="flow9" id="BPMNEdge_flow9">
-        <omgdi:waypoint x="590.0" y="178.0"></omgdi:waypoint>
-        <omgdi:waypoint x="635.0" y="178.0"></omgdi:waypoint>
+      <bpmndi:BPMNEdge bpmnElement="flow13" id="BPMNEdge_flow13">
+        <omgdi:waypoint x="767.0" y="130.0"></omgdi:waypoint>
+        <omgdi:waypoint x="842.0" y="130.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow14" id="BPMNEdge_flow14">
+        <omgdi:waypoint x="862.0" y="110.0"></omgdi:waypoint>
+        <omgdi:waypoint x="862.0" y="71.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow15" id="BPMNEdge_flow15">
+        <omgdi:waypoint x="862.0" y="150.0"></omgdi:waypoint>
+        <omgdi:waypoint x="862.0" y="192.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow16" id="BPMNEdge_flow16">
+        <omgdi:waypoint x="915.0" y="226.0"></omgdi:waypoint>
+        <omgdi:waypoint x="950.0" y="226.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow17" id="BPMNEdge_flow17">
+        <omgdi:waypoint x="915.0" y="40.0"></omgdi:waypoint>
+        <omgdi:waypoint x="960.0" y="40.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow18" id="BPMNEdge_flow18">
+        <omgdi:waypoint x="460.0" y="239.0"></omgdi:waypoint>
+        <omgdi:waypoint x="460.0" y="303.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow20" id="BPMNEdge_flow20">
+        <omgdi:waypoint x="663.0" y="334.0"></omgdi:waypoint>
+        <omgdi:waypoint x="694.0" y="334.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow21" id="BPMNEdge_flow21">
+        <omgdi:waypoint x="714.0" y="314.0"></omgdi:waypoint>
+        <omgdi:waypoint x="714.0" y="161.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow22" id="BPMNEdge_flow22">
+        <omgdi:waypoint x="734.0" y="334.0"></omgdi:waypoint>
+        <omgdi:waypoint x="779.0" y="334.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow23" id="BPMNEdge_flow23">
+        <omgdi:waypoint x="513.0" y="335.0"></omgdi:waypoint>
+        <omgdi:waypoint x="558.0" y="334.0"></omgdi:waypoint>
       </bpmndi:BPMNEdge>
     </bpmndi:BPMNPlane>
   </bpmndi:BPMNDiagram>

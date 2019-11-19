@@ -16,9 +16,18 @@ public class CheckBankDetails implements JavaDelegate {
 		
 		Response response=getBillingAccount();
 		
-//		int customerCheckStatus=response.code();
 		
-		System.out.println("billing details"+response);
+		int customerBankDetails=response.code();
+	
+		if (customerBankDetails==200)
+		{
+			execution.setVariable("customerBankDetails", "true");
+			System.out.println("billing details"+ customerBankDetails);
+		}else
+		{
+			execution.setVariable("customerBankDetails", "false");
+		}
+	
 		
 	}
 	

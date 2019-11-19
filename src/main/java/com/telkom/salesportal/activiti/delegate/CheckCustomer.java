@@ -16,11 +16,22 @@ public class CheckCustomer implements JavaDelegate {
 		int customerCheckStatus = response.code();
 		
 		execution.setVariable("customerCheckStatus", customerCheckStatus);
+//		System.out.println("Customer Response code: " + customerCheckStatus);
+		if(customerCheckStatus==200)
+		{
+			execution.setVariable("customerCheckStatus", "true");
 		System.out.println("Customer Response code: " + customerCheckStatus);
+		}else if(customerCheckStatus==400)
+		{
+			execution.setVariable("customerCheckStatus", "false");
+			System.out.println("Customer Response code:!!!!!!!!!!!!!!!!!!!!!!!!!!");
+		}
+		
+		
     }
 	
 	public Response getCustomer(){
-		return httpClient.get("http://localhost:8002/salesportal/api/customer?id=12");
+		return httpClient.get("http://localhost:8002/salesportal/api/customer");
 		
 	}
 }

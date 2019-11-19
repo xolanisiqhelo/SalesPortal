@@ -1,11 +1,11 @@
 package com.telkom.salesportal.activiti.delegate;
 
-import org.activiti.engine.RuntimeService;
+
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.JavaDelegate;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import com.telkom.salesportal.activiti.service.SalesPortalService;
+
+
 
 
 public class XdsVerification implements JavaDelegate {	
@@ -33,6 +33,6 @@ public class XdsVerification implements JavaDelegate {
     }
 	
 	public boolean xdsResponse(String id) {
-		return true;
+		return true		;
 	}
 }

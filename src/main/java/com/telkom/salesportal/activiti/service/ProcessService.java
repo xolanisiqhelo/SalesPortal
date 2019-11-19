@@ -3,10 +3,14 @@ package com.telkom.salesportal.activiti.service;
 import org.activiti.engine.RepositoryService;
 import org.activiti.engine.RuntimeService;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.runtime.ProcessInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.activiti.engine.task.Task;
 
+import com.telkom.salesportal.activiti.domain.CustomerDTO;
+
+import org.activiti.engine.task.Task;
+import org.activiti.engine.task.TaskQuery;
 
 import java.util.HashMap;
 import java.util.List;
@@ -24,17 +28,16 @@ public class ProcessService {
 	@Autowired private RepositoryService  repositoryService;
 	
 	
-
+	ProcessInstance processInstance;
 	
-	public String startTheProcess( String clientId) {
+	public String startTheProcess(String assignee, String clientId) {
 
-	
 
 		Map<String, Object> variables = new HashMap<>();
-		//variables.put("customer", "nkosi" );
+		variables.put("assignee", assignee);
 		variables.put("clientId",clientId);
         
-		runtimeService.startProcessInstanceByKey("telkom-process", variables);
+		processInstance = runtimeService.startProcessInstanceByKey("telkom-process", variables);
 
 		return processInformation();
 	}
@@ -51,8 +54,7 @@ public class ProcessService {
 
 		taskList.forEach(task -> {
 
-			processAndTaskInfo.append("ID: " + task.getId()+ ", Name: " + task.getName() + ", assignee: "
-					+ task.getAssignee());
+			processAndTaskInfo.append("ID: " + task.getId()+ ", Name: " + task.getName());
 		});
 
 		return processAndTaskInfo.toString();
@@ -68,5 +70,21 @@ public class ProcessService {
 		// complete the task
 		public void completeTask(String taskId) {
 			taskService.complete(taskId);
+		}
+		
+		public CustomerDTO createrCust(CustomerDTO cust) {
+			String executionId = processInstance.getId();
+			
+			Task usertasks = taskService.createTaskQuery()
+					.processInstanceId(executionId)
+					.singleResult();
+			
+			
+			this.runtimeService.setVariable(executionId, "customer", cust);
+			
+			taskService.complete(usertasks.getId());
+			System.out.println(" complete data");
+			
+			return cust;
 		}
 }
